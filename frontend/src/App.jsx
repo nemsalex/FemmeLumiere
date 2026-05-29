@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Accueil from './pages/Accueil'
 import Alphabetisation from './pages/Base'
@@ -7,8 +8,15 @@ import MamanAide from './pages/MamanAide'
 import BonneHumeur from './pages/BonneHumeur'
 import CoachIA from './pages/CoachIA'
 import Navbar from './components/Navbar'
+import SplashScreen from './components/SplashScreen'
 
 function App() {
+  const [splashTermine, setSplashTermine] = useState(false)
+
+  if (!splashTermine) {
+    return <SplashScreen onTermine={() => setSplashTermine(true)} />
+  }
+
   return (
     <BrowserRouter>
       <Navbar />
