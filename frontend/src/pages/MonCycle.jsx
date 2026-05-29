@@ -42,15 +42,9 @@ export default function MonCycle() {
       const annee = parseInt(chiffres.slice(4, 8))
       const anneeActuelle = new Date().getFullYear()
 
-      if (jour < 1 || jour > 31) {
-        setErreur('Le jour doit être entre 01 et 31.'); return
-      }
-      if (mois < 1 || mois > 12) {
-        setErreur('Le mois doit être entre 01 et 12.'); return
-      }
-      if (annee < 2000 || annee > anneeActuelle) {
-        setErreur(`L'année doit être entre 2000 et ${anneeActuelle}.`); return
-      }
+      if (jour < 1 || jour > 31) { setErreur('Le jour doit être entre 01 et 31.'); return }
+      if (mois < 1 || mois > 12) { setErreur('Le mois doit être entre 01 et 12.'); return }
+      if (annee < 2000 || annee > anneeActuelle) { setErreur(`L'année doit être entre 2000 et ${anneeActuelle}.`); return }
 
       const date = new Date(annee, mois - 1, jour)
       if (date.getDate() !== jour || date.getMonth() !== mois - 1) {
@@ -82,36 +76,39 @@ export default function MonCycle() {
       return
     }
     setErreur('')
+    setResultat(null)
     setChargement(true)
-    try {
-      const res = await axios.post(
-        `${API_URL}/cycle/`,
-        { date_regles: dateRegles },
-        { timeout: 60000 }
-      )
-      setResultat(res.data)
-      if (Notification.permission === 'granted') {
-        new Notification('Femme Lumière', {
-          body: `Prochaine période le ${res.data.prochaine_periode}`
-        })
-      } else if (Notification.permission !== 'denied') {
-        Notification.requestPermission().then(perm => {
-          if (perm === 'granted') {
-            new Notification('Femme Lumière', {
-              body: `Prochaine période le ${res.data.prochaine_periode}`
-            })
-          }
-        })
+
+    let tentatives = 0
+    const maxTentatives = 3
+
+    while (tentatives < maxTentatives) {
+      try {
+        const res = await axios.post(
+          `${API_URL}/cycle/`,
+          { date_regles: dateRegles },
+          { timeout: 30000 }
+        )
+        setResultat(res.data)
+        setErreur('')
+        if (Notification.permission === 'granted') {
+          new Notification('Femme Lumière', { body: `Prochaine période le ${res.data.prochaine_periode}` })
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(perm => {
+            if (perm === 'granted') new Notification('Femme Lumière', { body: `Prochaine période le ${res.data.prochaine_periode}` })
+          })
+        }
+        setChargement(false)
+        return
+      } catch {
+        tentatives++
+        if (tentatives < maxTentatives) {
+          await new Promise(resolve => setTimeout(resolve, 3000))
+        }
       }
-    } catch (err) {
-      if (err.code === 'ECONNABORTED') {
-        setErreur('Le serveur met du temps à répondre, réessaie dans quelques secondes.')
-      } else {
-        setErreur('Erreur de connexion. Le serveur démarre peut-être, attends 30 secondes et réessaie.')
-      }
-    } finally {
-      setChargement(false)
     }
+    setErreur('Impossible de joindre le serveur. Vérifie ta connexion internet.')
+    setChargement(false)
   }
 
   const soumettreHumeur = async () => {
@@ -136,34 +133,17 @@ export default function MonCycle() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fdf2f8', paddingBottom: 40 }}>
 
-      {/* Header */}
       <div style={{ backgroundColor: '#fbcfe8', padding: '24px 16px', textAlign: 'center' }}>
         <h2 style={{ fontSize: 24, fontWeight: 'bold', color: '#831843', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: 0 }}>
           <Heart /> Mon Cycle
         </h2>
-        <p style={{ color: '#9d174d', fontSize: 14, margin: '4px 0 0' }}>
-          Suis ton cycle et ton bien-être
-        </p>
+        <p style={{ color: '#9d174d', fontSize: 14, margin: '4px 0 0' }}>Suis ton cycle et ton bien-être</p>
       </div>
 
-      {/* Onglets */}
       <div style={{ display: 'flex', gap: 8, padding: '12px 16px', backgroundColor: '#fff', boxShadow: '0 1px 4px #0001', overflowX: 'auto' }}>
         {onglets.map((o) => (
-          <button
-            key={o.key}
-            onClick={() => setOnglet(o.key)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 999,
-              border: 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-              fontSize: 13,
-              backgroundColor: onglet === o.key ? '#f472b6' : '#f3f4f6',
-              color: onglet === o.key ? '#fff' : '#374151',
-              transition: 'all 0.2s',
-            }}
+          <button key={o.key} onClick={() => setOnglet(o.key)}
+            style={{ padding: '6px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 600, fontSize: 13, backgroundColor: onglet === o.key ? '#f472b6' : '#f3f4f6', color: onglet === o.key ? '#fff' : '#374151', transition: 'all 0.2s' }}
           >
             {o.label}
           </button>
@@ -172,11 +152,10 @@ export default function MonCycle() {
 
       <div style={{ padding: '24px 16px', maxWidth: 480, margin: '0 auto' }}>
 
-        {/* CYCLE */}
         {onglet === 'cycle' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #fbcfe8' }}>
-              <p style={{ fontWeight: 600, color: '#374151', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 12px' }}>
+              <p style={{ fontWeight: 600, color: '#374151', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Calendar size={18} style={{ color: '#f472b6' }} />
                 Date de début de tes dernières règles
               </p>
@@ -186,41 +165,15 @@ export default function MonCycle() {
                 maxLength={10}
                 value={dateAffichee}
                 onChange={(e) => gererDate(e.target.value)}
-                style={{
-                  width: '100%',
-                  borderRadius: 12,
-                  border: '2px solid #fbcfe8',
-                  padding: '12px 16px',
-                  fontSize: 16,
-                  color: '#374151',
-                  backgroundColor: '#fff',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
+                style={{ width: '100%', borderRadius: 12, border: '2px solid #fbcfe8', padding: '12px 16px', fontSize: 16, color: '#374151', backgroundColor: '#fff', outline: 'none', boxSizing: 'border-box' }}
               />
-              {erreur && (
-                <p style={{ color: '#dc2626', fontSize: 13, marginTop: 8, margin: '8px 0 0' }}>
-                  {erreur}
-                </p>
-              )}
+              {erreur && <p style={{ color: '#dc2626', fontSize: 13, margin: '8px 0 0' }}>{erreur}</p>}
               <button
                 onClick={soumettreDate}
                 disabled={chargement}
-                style={{
-                  width: '100%',
-                  marginTop: 16,
-                  backgroundColor: chargement ? '#f9a8d4' : '#f472b6',
-                  border: 'none',
-                  borderRadius: 12,
-                  padding: '14px 0',
-                  color: '#fff',
-                  fontWeight: 600,
-                  fontSize: 15,
-                  cursor: chargement ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s',
-                }}
+                style={{ width: '100%', marginTop: 16, backgroundColor: chargement ? '#f9a8d4' : '#f472b6', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontWeight: 600, fontSize: 15, cursor: chargement ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
               >
-                {chargement ? 'Connexion au serveur...' : 'Calculer mon cycle'}
+                {chargement ? 'Calcul en cours...' : 'Calculer mon cycle'}
               </button>
             </div>
 
@@ -231,10 +184,7 @@ export default function MonCycle() {
                   { label: 'Début période fertile', valeur: resultat.debut_fertile, bg: '#fff1f2', border: '#fecdd3' },
                   { label: 'Fin période fertile', valeur: resultat.fin_fertile, bg: '#fff1f2', border: '#fecdd3' },
                 ].map((item) => (
-                  <div
-                    key={item.label}
-                    style={{ borderRadius: 16, padding: 16, display: 'flex', alignItems: 'center', gap: 16, backgroundColor: item.bg, border: `1px solid ${item.border}` }}
-                  >
+                  <div key={item.label} style={{ borderRadius: 16, padding: 16, display: 'flex', alignItems: 'center', gap: 16, backgroundColor: item.bg, border: `1px solid ${item.border}` }}>
                     <Calendar size={18} style={{ color: '#f472b6' }} />
                     <div>
                       <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>{item.label}</p>
@@ -250,86 +200,34 @@ export default function MonCycle() {
           </div>
         )}
 
-        {/* HUMEUR */}
         {onglet === 'humeur' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <p style={{ textAlign: 'center', color: '#6b7280', margin: 0 }}>
-              Comment tu te sens aujourd'hui ?
-            </p>
+            <p style={{ textAlign: 'center', color: '#6b7280', margin: 0 }}>Comment tu te sens aujourd'hui ?</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {HUMEURS.map((h) => (
-                <button
-                  key={h.valeur}
-                  onClick={() => setHumeurChoisie(h.valeur)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: 16,
-                    borderRadius: 16,
-                    border: `2px solid ${humeurChoisie === h.valeur ? '#f472b6' : '#fce7f3'}`,
-                    backgroundColor: humeurChoisie === h.valeur ? '#fbcfe8' : '#fff',
-                    color: humeurChoisie === h.valeur ? '#831843' : '#6b7280',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
+                <button key={h.valeur} onClick={() => setHumeurChoisie(h.valeur)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: 16, borderRadius: 16, border: `2px solid ${humeurChoisie === h.valeur ? '#f472b6' : '#fce7f3'}`, backgroundColor: humeurChoisie === h.valeur ? '#fbcfe8' : '#fff', color: humeurChoisie === h.valeur ? '#831843' : '#6b7280', cursor: 'pointer', transition: 'all 0.2s' }}
                 >
                   {h.icon}
                   <span style={{ fontSize: 12, fontWeight: 600 }}>{h.label}</span>
                 </button>
               ))}
             </div>
-            <textarea
-              rows={3}
-              placeholder="Une note pour aujourd'hui... (optionnel)"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              style={{
-                width: '100%',
-                borderRadius: 16,
-                border: '2px solid #fbcfe8',
-                padding: 12,
-                fontSize: 14,
-                color: '#374151',
-                backgroundColor: '#fff',
-                outline: 'none',
-                resize: 'none',
-                boxSizing: 'border-box',
-              }}
+            <textarea rows={3} placeholder="Une note pour aujourd'hui... (optionnel)" value={note} onChange={(e) => setNote(e.target.value)}
+              style={{ width: '100%', borderRadius: 16, border: '2px solid #fbcfe8', padding: 12, fontSize: 14, color: '#374151', backgroundColor: '#fff', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
             />
-            <button
-              onClick={soumettreHumeur}
-              disabled={!humeurChoisie}
-              style={{
-                width: '100%',
-                backgroundColor: humeurChoisie ? '#f472b6' : '#e5e7eb',
-                border: 'none',
-                borderRadius: 12,
-                padding: '14px 0',
-                color: humeurChoisie ? '#fff' : '#9ca3af',
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: humeurChoisie ? 'pointer' : 'not-allowed',
-                transition: 'all 0.2s',
-              }}
+            <button onClick={soumettreHumeur} disabled={!humeurChoisie}
+              style={{ width: '100%', backgroundColor: humeurChoisie ? '#f472b6' : '#e5e7eb', border: 'none', borderRadius: 12, padding: '14px 0', color: humeurChoisie ? '#fff' : '#9ca3af', fontWeight: 600, fontSize: 15, cursor: humeurChoisie ? 'pointer' : 'not-allowed', transition: 'all 0.2s' }}
             >
               Enregistrer mon humeur
             </button>
-            {messageHumeur && (
-              <p style={{ textAlign: 'center', fontSize: 14, color: '#16a34a', margin: 0 }}>
-                {messageHumeur}
-              </p>
-            )}
+            {messageHumeur && <p style={{ textAlign: 'center', fontSize: 14, color: '#16a34a', margin: 0 }}>{messageHumeur}</p>}
           </div>
         )}
 
-        {/* HISTORIQUE */}
         {onglet === 'historique' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p style={{ textAlign: 'center', fontSize: 13, color: '#6b7280', margin: 0 }}>
-              Tes 5 derniers cycles enregistrés
-            </p>
+            <p style={{ textAlign: 'center', fontSize: 13, color: '#6b7280', margin: 0 }}>Tes 5 derniers cycles enregistrés</p>
             {historique.length === 0 ? (
               <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 32, textAlign: 'center', border: '1px solid #fbcfe8' }}>
                 <Calendar size={32} style={{ color: '#fbcfe8', display: 'block', margin: '0 auto 8px' }} />
@@ -337,10 +235,7 @@ export default function MonCycle() {
               </div>
             ) : (
               historique.map((c, i) => (
-                <div
-                  key={i}
-                  style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #fbcfe8' }}
-                >
+                <div key={i} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #fbcfe8' }}>
                   <Calendar size={20} style={{ color: '#f472b6' }} />
                   <div>
                     <p style={{ fontSize: 12, color: '#9ca3af', margin: 0 }}>Début des règles</p>
@@ -352,7 +247,6 @@ export default function MonCycle() {
           </div>
         )}
 
-        {/* CONSEILS */}
         {onglet === 'conseils' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
@@ -361,17 +255,12 @@ export default function MonCycle() {
               { titre: 'Douleurs menstruelles', texte: "Une bouillotte sur le ventre, une tisane au gingembre ou un léger massage peuvent aider.", icon: <Thermometer size={20} style={{ color: '#f472b6' }} /> },
               { titre: 'Hygiène intime', texte: "Change ta serviette toutes les 4 à 6 heures. Lave-toi à l'eau propre sans savon parfumé.", icon: <BookHeart size={20} style={{ color: '#f472b6' }} /> },
             ].map((conseil) => (
-              <div
-                key={conseil.titre}
-                style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, border: '1px solid #fbcfe8' }}
-              >
+              <div key={conseil.titre} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, border: '1px solid #fbcfe8' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   {conseil.icon}
                   <p style={{ fontWeight: 600, color: '#1f2937', margin: 0 }}>{conseil.titre}</p>
                 </div>
-                <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, margin: 0 }}>
-                  {conseil.texte}
-                </p>
+                <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, margin: 0 }}>{conseil.texte}</p>
               </div>
             ))}
           </div>
