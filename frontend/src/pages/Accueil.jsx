@@ -61,10 +61,17 @@ export default function Accueil() {
     <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #fdf2f8 0%, #fce7f3 50%, #ede9fe 100%)', paddingBottom: 40 }}>
 
       <div style={{ textAlign: 'center', padding: '40px 16px 32px' }}>
-        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #f472b6, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 4px 15px #f472b640' }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #f472b6, #a78bfa)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 16px', boxShadow: '0 4px 15px #f472b640'
+        }}>
           <span style={{ color: '#fff', fontSize: 28, fontWeight: 'bold' }}>F</span>
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 'bold', color: '#831843', margin: '0 0 8px' }}>Femme Lumière +</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 'bold', color: '#831843', margin: '0 0 8px' }}>
+          Femme Lumière +
+        </h1>
         <p style={{ color: '#9d174d', fontSize: 15, maxWidth: 280, margin: '0 auto', lineHeight: 1.5 }}>
           Ton espace d'apprentissage, de santé et de bien-être
         </p>
@@ -79,8 +86,10 @@ export default function Accueil() {
             <button
               key={module.route}
               onClick={() => navigate(module.route)}
-              onMouseEnter={() => setHovered(module.route)}
-              onMouseLeave={() => setHovered(null)}
+              onPointerEnter={() => setHovered(module.route)}
+              onPointerLeave={() => setHovered(null)}
+              onTouchStart={() => setHovered(module.route)}
+              onTouchEnd={() => setHovered(null)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -95,11 +104,15 @@ export default function Accueil() {
                 cursor: 'pointer',
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                 transform: hovered === module.route ? 'translateY(-4px) scale(1.03)' : 'translateY(0) scale(1)',
-                boxShadow: hovered === module.route ? `0 8px 24px ${module.border}80` : '0 2px 8px #0000000d',
+                boxShadow: hovered === module.route
+                  ? `0 8px 24px ${module.border}80`
+                  : '0 2px 8px #0000000d',
               }}
             >
               {module.icon}
-              <span style={{ fontWeight: 600, fontSize: 13, textAlign: 'center', lineHeight: 1.3 }}>{module.label}</span>
+              <span style={{ fontWeight: 600, fontSize: 13, textAlign: 'center', lineHeight: 1.3 }}>
+                {module.label}
+              </span>
             </button>
           ))}
         </div>
