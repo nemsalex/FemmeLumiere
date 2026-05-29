@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookOpen, Scissors, Heart, Baby, Smile, Bot } from 'lucide-react'
 
@@ -54,51 +55,57 @@ const modules = [
 
 export default function Accueil() {
   const navigate = useNavigate()
+  const [hovered, setHovered] = useState(null)
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: 'linear-gradient(160deg, #fdf2f8 0%, #fce7f3 50%, #ede9fe 100%)' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #fdf2f8 0%, #fce7f3 50%, #ede9fe 100%)', paddingBottom: 40 }}>
 
-      {/* Hero */}
-      <div className="text-center px-4 pt-10 pb-8">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md" style={{ background: 'linear-gradient(135deg, #f472b6, #a78bfa)' }}>
-          <span className="text-white text-2xl font-bold">F</span>
+      <div style={{ textAlign: 'center', padding: '40px 16px 32px' }}>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #f472b6, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 4px 15px #f472b640' }}>
+          <span style={{ color: '#fff', fontSize: 28, fontWeight: 'bold' }}>F</span>
         </div>
-        <h1 className="text-3xl font-bold mb-2" style={{ color: '#831843' }}>
-          Femme Lumière +
-        </h1>
-        <p className="text-base max-w-xs mx-auto leading-relaxed" style={{ color: '#9d174d' }}>
+        <h1 style={{ fontSize: 28, fontWeight: 'bold', color: '#831843', margin: '0 0 8px' }}>Femme Lumière +</h1>
+        <p style={{ color: '#9d174d', fontSize: 15, maxWidth: 280, margin: '0 auto', lineHeight: 1.5 }}>
           Ton espace d'apprentissage, de santé et de bien-être
         </p>
       </div>
 
-      {/* Grille modules */}
-      <div className="px-5 max-w-md mx-auto">
-        <p className="text-xs font-semibold uppercase tracking-widest mb-4 text-center" style={{ color: '#c084fc' }}>
+      <div style={{ padding: '0 20px', maxWidth: 480, margin: '0 auto' }}>
+        <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 3, color: '#c084fc', textAlign: 'center', marginBottom: 16 }}>
           Choisir un module
         </p>
-        <div className="grid grid-cols-2 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {modules.map((module) => (
             <button
               key={module.route}
               onClick={() => navigate(module.route)}
-              className="flex flex-col items-center justify-center gap-3 p-6 rounded-3xl shadow-md active:scale-95 transition-all duration-150"
+              onMouseEnter={() => setHovered(module.route)}
+              onMouseLeave={() => setHovered(null)}
               style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 12,
+                padding: '24px 16px',
+                borderRadius: 24,
+                border: `1.5px solid ${module.border}`,
                 background: module.bg,
-                borderWidth: '1.5px',
-                borderStyle: 'solid',
-                borderColor: module.border,
                 color: module.text,
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                transform: hovered === module.route ? 'translateY(-4px) scale(1.03)' : 'translateY(0) scale(1)',
+                boxShadow: hovered === module.route ? `0 8px 24px ${module.border}80` : '0 2px 8px #0000000d',
               }}
             >
               {module.icon}
-              <span className="font-semibold text-sm text-center leading-tight">{module.label}</span>
+              <span style={{ fontWeight: 600, fontSize: 13, textAlign: 'center', lineHeight: 1.3 }}>{module.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Footer discret */}
-      <p className="text-center text-xs mt-10" style={{ color: '#d8b4fe' }}>
+      <p style={{ textAlign: 'center', fontSize: 12, marginTop: 40, color: '#d8b4fe' }}>
         Femme Lumière + — Pour chaque femme
       </p>
     </div>
