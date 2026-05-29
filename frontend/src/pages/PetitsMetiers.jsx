@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Scissors, ChefHat, Sparkles, ChevronDown, ChevronUp, Star } from 'lucide-react'
+import { Scissors, ChefHat, Sparkles, ChevronDown, ChevronUp, Star, Play } from 'lucide-react'
 
 const METIERS = [
   {
@@ -10,6 +10,7 @@ const METIERS = [
     fiches: [
       {
         titre: 'Coudre à la main', difficulte: 'Facile',
+        video: 'ns6yRNIkEnI',
         materiel: ['Aiguille', 'Fil', 'Tissu', 'Ciseaux'],
         etapes: [
           'Coupe ton tissu à la taille voulue.',
@@ -22,6 +23,7 @@ const METIERS = [
       },
       {
         titre: 'Réparer un vêtement', difficulte: 'Facile',
+        video: '162kB_7eigo',
         materiel: ['Aiguille', 'Fil de la couleur du vêtement', 'Ciseaux'],
         etapes: [
           "Identifie l'endroit déchiré ou décousu.",
@@ -34,6 +36,7 @@ const METIERS = [
       },
       {
         titre: 'Faire un ourlet', difficulte: 'Moyen',
+        video: '3kfyHH5OfrI',
         materiel: ['Aiguille', 'Fil', 'Épingles', 'Fer à repasser'],
         etapes: [
           'Mesure la longueur souhaitée et marque avec des épingles.',
@@ -54,6 +57,7 @@ const METIERS = [
     fiches: [
       {
         titre: 'Tresser les cheveux', difficulte: 'Facile',
+        video: 'frwcIzvHYC8',
         materiel: ['Peigne', 'Huile de coco', 'Élastiques'],
         etapes: [
           'Démêle bien les cheveux avec le peigne.',
@@ -66,9 +70,10 @@ const METIERS = [
       },
       {
         titre: 'Faire un chignon simple', difficulte: 'Facile',
+        video: 'IoO6lLkdeuY',
         materiel: ['Peigne', 'Élastiques', 'Épingles à cheveux'],
         etapes: [
-          'Peigne les cheveux vers l\'arrière.',
+          "Peigne les cheveux vers l'arrière.",
           'Fais une queue de cheval haute ou basse.',
           "Enroule les cheveux autour de l'élastique.",
           'Fixe avec les épingles à cheveux.',
@@ -86,6 +91,7 @@ const METIERS = [
     fiches: [
       {
         titre: 'Faire et vendre du jus', difficulte: 'Facile',
+        video: 'bB2xQE58MZ0',
         materiel: ['Fruits frais', 'Extracteur ou presse', 'Bouteilles propres', 'Étiquettes'],
         etapes: [
           'Achète des fruits frais au marché (orange, bissap, tamarin...).',
@@ -99,10 +105,11 @@ const METIERS = [
       },
       {
         titre: 'Fabriquer du savon', difficulte: 'Moyen',
+        video: 'KijtJer0710',
         materiel: ['Huile de palme', 'Soude caustique', 'Eau', 'Moule', 'Gants de protection'],
         etapes: [
           'Mets tes gants — la soude est dangereuse sans protection.',
-          'Mélange 100g de soude dans 250ml d\'eau froide, jamais chaude.',
+          "Mélange 100g de soude dans 250ml d'eau froide, jamais chaude.",
           "Chauffe 500ml d'huile de palme à feu doux.",
           "Verse lentement la soude dans l'huile en remuant.",
           "Mélange jusqu'à obtenir une pâte épaisse.",
@@ -112,6 +119,7 @@ const METIERS = [
       },
       {
         titre: 'Vendre des beignets', difficulte: 'Facile',
+        video: 'AvSYUlWkSeQ',
         materiel: ['Farine', 'Sucre', 'Levure', 'Huile de friture', 'Bassine'],
         etapes: [
           'Mélange 500g farine, 2 cuillères de sucre, 1 sachet de levure.',
@@ -127,53 +135,100 @@ const METIERS = [
   },
 ]
 
+function VideoYoutube({ videoId }) {
+  const [jouer, setJouer] = useState(false)
+
+  if (jouer) {
+    return (
+      <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
+        <iframe
+          width="100%"
+          height="200"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+          title="Tutoriel"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ display: 'block' }}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setJouer(true)}
+      style={{
+        width: '100%', marginBottom: 16, borderRadius: 12, overflow: 'hidden',
+        border: 'none', padding: 0, cursor: 'pointer', position: 'relative',
+        backgroundColor: '#000', display: 'block',
+      }}
+    >
+      <img
+        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+        alt="Tutoriel vidéo"
+        style={{ width: '100%', height: 180, objectFit: 'cover', opacity: 0.85, display: 'block' }}
+      />
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: '#ff0000', borderRadius: '50%',
+        width: 52, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 4px 16px #0005',
+      }}>
+        <Play size={24} fill="#fff" style={{ color: '#fff', marginLeft: 3 }} />
+      </div>
+      <div style={{ position: 'absolute', bottom: 8, left: 12, backgroundColor: '#000a', borderRadius: 6, padding: '3px 10px' }}>
+        <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>Voir le tutoriel</span>
+      </div>
+    </button>
+  )
+}
+
 export default function PetitsMetiers() {
   const [categorieActive, setCategorieActive] = useState(0)
   const [ficheOuverte, setFicheOuverte] = useState(null)
   const categorie = METIERS[categorieActive]
 
   return (
-    <div className="min-h-screen pb-10" style={{ backgroundColor: '#faf5ff' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#faf5ff', paddingBottom: 40 }}>
 
-      <div className="px-4 py-6 text-center" style={{ backgroundColor: '#e9d5ff' }}>
-        <h2 className="text-2xl font-bold flex items-center justify-center gap-2" style={{ color: '#4a1d96' }}>
+      <div style={{ backgroundColor: '#e9d5ff', padding: '24px 16px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: 24, fontWeight: 'bold', color: '#4a1d96', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: 0 }}>
           <Scissors /> Petits Métiers
         </h2>
-        <p className="text-sm mt-1" style={{ color: '#6b21a8' }}>Apprends un métier, gagne ta vie</p>
+        <p style={{ color: '#6b21a8', fontSize: 14, margin: '4px 0 0' }}>Apprends un métier, gagne ta vie</p>
       </div>
 
-      <div className="flex gap-2 px-4 py-3 bg-white shadow-sm overflow-x-auto">
+      <div style={{ display: 'flex', gap: 8, padding: '12px 16px', backgroundColor: '#fff', boxShadow: '0 1px 4px #0001', overflowX: 'auto' }}>
         {METIERS.map((m, i) => (
-          <button
-            key={m.categorie}
-            onClick={() => { setCategorieActive(i); setFicheOuverte(null) }}
-            className="btn btn-sm rounded-full gap-2 whitespace-nowrap"
-            style={categorieActive === i ? m.btnActif : { backgroundColor: 'transparent', color: '#374151', border: '1px solid #e5e7eb' }}
+          <button key={m.categorie} onClick={() => { setCategorieActive(i); setFicheOuverte(null) }}
+            style={{ padding: '6px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+              ...(categorieActive === i ? m.btnActif : { backgroundColor: '#f3f4f6', color: '#374151' })
+            }}
           >
             {m.icon} {m.categorie}
           </button>
         ))}
       </div>
 
-      <div className="px-4 py-6 max-w-md mx-auto space-y-4">
+      <div style={{ padding: '24px 16px', maxWidth: 480, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {categorie.fiches.map((fiche, i) => (
-          <div key={fiche.titre} className="rounded-2xl shadow-sm overflow-hidden bg-white" style={{ borderWidth: 2, borderStyle: 'solid', borderColor: categorie.border }}>
+          <div key={fiche.titre} style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: '#fff', boxShadow: '0 2px 8px #0001', borderWidth: 2, borderStyle: 'solid', borderColor: categorie.border }}>
 
-            <button
-              className="w-full flex items-center justify-between px-4 py-4 bg-white"
+            <button className="w-full"
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: '#fff', border: 'none', cursor: 'pointer' }}
               onClick={() => setFicheOuverte(ficheOuverte === i ? null : i)}
             >
-              <div className="flex items-center gap-3">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <Star size={20} style={{ color: categorie.text }} />
-                <div className="text-left">
-                  <p className="font-bold" style={{ color: '#1f2937' }}>{fiche.titre}</p>
-                  <span
-                    className="badge badge-sm border-none mt-1"
-                    style={fiche.difficulte === 'Facile'
-                      ? { backgroundColor: '#dcfce7', color: '#14532d' }
-                      : { backgroundColor: '#ffedd5', color: '#7c2d12' }
-                    }
-                  >
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{fiche.titre}</p>
+                  <span style={{
+                    display: 'inline-block', marginTop: 4, borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 600,
+                    backgroundColor: fiche.difficulte === 'Facile' ? '#dcfce7' : '#ffedd5',
+                    color: fiche.difficulte === 'Facile' ? '#14532d' : '#7c2d12',
+                  }}>
                     {fiche.difficulte}
                   </span>
                 </div>
@@ -185,32 +240,42 @@ export default function PetitsMetiers() {
             </button>
 
             {ficheOuverte === i && (
-              <div className="px-4 pb-4 bg-white space-y-4">
-                <div>
-                  <p className="font-semibold mb-2" style={{ color: '#374151' }}>Matériel nécessaire</p>
-                  <div className="flex flex-wrap gap-2">
+              <div style={{ padding: '0 16px 16px', backgroundColor: '#fff' }}>
+
+                {/* Vidéo YouTube */}
+                <VideoYoutube videoId={fiche.video} />
+
+                {/* Matériel */}
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontWeight: 600, color: '#374151', marginBottom: 8 }}>Matériel nécessaire</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {fiche.materiel.map((m) => (
-                      <span key={m} className="badge border-none" style={{ backgroundColor: '#f3f4f6', color: '#374151' }}>{m}</span>
+                      <span key={m} style={{ backgroundColor: '#f3f4f6', color: '#374151', borderRadius: 999, padding: '4px 12px', fontSize: 13 }}>{m}</span>
                     ))}
                   </div>
                 </div>
-                <div>
-                  <p className="font-semibold mb-2" style={{ color: '#374151' }}>Étapes</p>
-                  <ol className="space-y-2">
+
+                {/* Étapes */}
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontWeight: 600, color: '#374151', marginBottom: 8 }}>Étapes</p>
+                  <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {fiche.etapes.map((etape, j) => (
-                      <li key={j} className="flex gap-3 items-start">
-                        <span className="rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shrink-0 mt-0.5" style={{ backgroundColor: categorie.bg, color: categorie.text }}>
+                      <li key={j} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        <span style={{ backgroundColor: categorie.bg, color: categorie.text, borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 'bold', flexShrink: 0, marginTop: 2 }}>
                           {j + 1}
                         </span>
-                        <p className="text-sm leading-relaxed" style={{ color: '#374151' }}>{etape}</p>
+                        <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.6, margin: 0 }}>{etape}</p>
                       </li>
                     ))}
                   </ol>
                 </div>
-                <div className="rounded-xl p-3" style={{ backgroundColor: categorie.bg, borderWidth: 1, borderStyle: 'solid', borderColor: categorie.border }}>
-                  <p className="text-sm font-semibold mb-1" style={{ color: categorie.text }}>Conseil</p>
-                  <p className="text-sm" style={{ color: categorie.text }}>{fiche.conseil}</p>
+
+                {/* Conseil */}
+                <div style={{ backgroundColor: categorie.bg, borderRadius: 12, padding: 12, borderWidth: 1, borderStyle: 'solid', borderColor: categorie.border }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: categorie.text, margin: '0 0 4px' }}>Conseil</p>
+                  <p style={{ fontSize: 13, color: categorie.text, margin: 0 }}>{fiche.conseil}</p>
                 </div>
+
               </div>
             )}
           </div>

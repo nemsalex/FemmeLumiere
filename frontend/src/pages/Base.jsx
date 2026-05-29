@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BookOpen, Volume2, Globe } from 'lucide-react'
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+const CHIFFRES = ['0','1','2','3','4','5','6','7','8','9']
 const SYLLABES = ['BA','BE','BI','BO','BU','MA','ME','MI','MO','MU','PA','PE','PI','PO','PU','FA','FE','FI','FO','FU']
 const MOTS = ['MAMA','PAPA','BEBE','LAIT','PAIN','EAU','FEU','SOL','MAIN','PIED']
 const HISTOIRES = [
@@ -29,6 +30,17 @@ const MOTS_ANGLAIS = [
   { mot: 'School', traduction: 'École' },
 ]
 
+const EXERCICES_COMPTAGE = [
+  { question: 'Combien font 2 + 3 ?', choix: ['4','5','6'], reponse: 1 },
+  { question: 'Combien font 1 + 1 ?', choix: ['1','2','3'], reponse: 1 },
+  { question: 'Combien font 4 + 2 ?', choix: ['5','6','7'], reponse: 1 },
+  { question: 'Combien font 3 + 3 ?', choix: ['5','6','7'], reponse: 1 },
+  { question: 'Combien font 5 + 4 ?', choix: ['8','9','10'], reponse: 1 },
+  { question: 'Combien font 7 - 2 ?', choix: ['4','5','6'], reponse: 1 },
+  { question: 'Combien font 10 - 3 ?', choix: ['6','7','8'], reponse: 1 },
+  { question: 'Combien font 6 - 4 ?', choix: ['1','2','3'], reponse: 1 },
+]
+
 const lire = (texte, lang = 'fr-FR') => {
   window.speechSynthesis.cancel()
   const u = new SpeechSynthesisUtterance(texte)
@@ -42,10 +54,27 @@ export default function Alphabetisation() {
   const [histoireIndex, setHistoireIndex] = useState(0)
   const [reponseChoisie, setReponseChoisie] = useState(null)
   const [texteEcrit, setTexteEcrit] = useState('')
+  const [exerciceIndex, setExerciceIndex] = useState(0)
+  const [reponseComptage, setReponseComptage] = useState(null)
+  const [score, setScore] = useState(0)
+
   const histoire = HISTOIRES[histoireIndex]
+  const exercice = EXERCICES_COMPTAGE[exerciceIndex]
+
+  const choisirReponseComptage = (i) => {
+    setReponseComptage(i)
+    if (i === exercice.reponse) setScore(s => s + 1)
+  }
+
+  const exerciceSuivant = () => {
+    setExerciceIndex(i => (i + 1) % EXERCICES_COMPTAGE.length)
+    setReponseComptage(null)
+  }
 
   const onglets = [
     { key: 'alphabet', label: 'Alphabet' },
+    { key: 'chiffres', label: 'Chiffres' },
+    { key: 'comptage', label: 'Comptage' },
     { key: 'syllabes', label: 'Syllabes' },
     { key: 'mots', label: 'Mots' },
     { key: 'histoires', label: 'Histoires' },
@@ -56,39 +85,23 @@ export default function Alphabetisation() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fefce8', paddingBottom: 40 }}>
 
-      {/* Header */}
       <div style={{ backgroundColor: '#fef08a', padding: '24px 16px', textAlign: 'center' }}>
         <h2 style={{ fontSize: 24, fontWeight: 'bold', color: '#713f12', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: 0 }}>
           <BookOpen size={24} /> Alphabétisation
         </h2>
-        <p style={{ color: '#854d0e', fontSize: 14, marginTop: 4 }}>Apprends à lire et écrire à ton rythme</p>
+        <p style={{ color: '#854d0e', fontSize: 14, marginTop: 4, margin: '4px 0 0' }}>Apprends à lire, écrire et compter</p>
       </div>
 
-      {/* Onglets */}
       <div style={{ display: 'flex', gap: 8, padding: '12px 16px', backgroundColor: '#fff', boxShadow: '0 1px 4px #0001', overflowX: 'auto' }}>
         {onglets.map((o) => (
-          <button
-            key={o.key}
-            onClick={() => setOnglet(o.key)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 999,
-              border: 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-              fontSize: 13,
-              backgroundColor: onglet === o.key ? '#facc15' : '#f3f4f6',
-              color: onglet === o.key ? '#713f12' : '#374151',
-              transition: 'all 0.2s',
-            }}
+          <button key={o.key} onClick={() => setOnglet(o.key)}
+            style={{ padding: '6px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 600, fontSize: 13, backgroundColor: onglet === o.key ? '#facc15' : '#f3f4f6', color: onglet === o.key ? '#713f12' : '#374151', transition: 'all 0.2s' }}
           >
             {o.label}
           </button>
         ))}
       </div>
 
-      {/* Contenu */}
       <div style={{ padding: '24px 16px', maxWidth: 480, margin: '0 auto' }}>
 
         {/* ALPHABET */}
@@ -97,9 +110,7 @@ export default function Alphabetisation() {
             <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 16 }}>Appuie sur une lettre pour l'entendre</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
               {ALPHABET.map((lettre) => (
-                <button
-                  key={lettre}
-                  onClick={() => lire(lettre)}
+                <button key={lettre} onClick={() => lire(lettre)}
                   style={{ backgroundColor: '#fef9c3', border: '1px solid #fde047', color: '#713f12', borderRadius: 12, padding: '12px 0', fontSize: 18, fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   {lettre}
@@ -109,15 +120,97 @@ export default function Alphabetisation() {
           </div>
         )}
 
+        {/* CHIFFRES */}
+        {onglet === 'chiffres' && (
+          <div>
+            <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 16 }}>Appuie sur un chiffre pour l'entendre</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
+              {CHIFFRES.map((chiffre) => (
+                <button key={chiffre} onClick={() => lire(chiffre)}
+                  style={{ backgroundColor: '#fef9c3', border: '2px solid #fde047', color: '#713f12', borderRadius: 16, padding: '20px 0', fontSize: 28, fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  {chiffre}
+                </button>
+              ))}
+            </div>
+            <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #fde047' }}>
+              <p style={{ fontWeight: 700, color: '#713f12', marginBottom: 12, fontSize: 16 }}>Compter de 1 à 10</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                  <button key={n} onClick={() => lire(`${n}`)}
+                    style={{ backgroundColor: '#fef08a', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 16, fontWeight: 'bold', color: '#713f12', cursor: 'pointer' }}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => lire('1, 2, 3, 4, 5, 6, 7, 8, 9, 10')}
+                style={{ marginTop: 16, width: '100%', backgroundColor: '#facc15', border: 'none', borderRadius: 12, padding: '12px 0', fontWeight: 700, color: '#713f12', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              >
+                <Volume2 size={18} /> Écouter de 1 à 10
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* COMPTAGE */}
+        {onglet === 'comptage' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, border: '1px solid #fde047', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ margin: 0, fontWeight: 600, color: '#374151' }}>Exercice {exerciceIndex + 1} / {EXERCICES_COMPTAGE.length}</p>
+              <span style={{ backgroundColor: '#fef08a', borderRadius: 999, padding: '4px 12px', fontWeight: 700, color: '#713f12' }}>
+                Score : {score}
+              </span>
+            </div>
+
+            <div style={{ backgroundColor: '#fefce8', borderRadius: 16, padding: 24, border: '2px solid #fde047', textAlign: 'center' }}>
+              <p style={{ fontSize: 22, fontWeight: 'bold', color: '#713f12', margin: 0 }}>{exercice.question}</p>
+              <button onClick={() => lire(exercice.question)}
+                style={{ marginTop: 12, backgroundColor: '#fef08a', border: 'none', borderRadius: 8, padding: '6px 14px', color: '#713f12', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                <Volume2 size={16} /> Écouter
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {exercice.choix.map((c, i) => (
+                <button key={i} onClick={() => choisirReponseComptage(i)}
+                  disabled={reponseComptage !== null}
+                  style={{
+                    padding: '20px 0', borderRadius: 16, fontSize: 24, fontWeight: 'bold', cursor: reponseComptage !== null ? 'default' : 'pointer', border: '2px solid',
+                    backgroundColor: reponseComptage === null ? '#fff' : i === exercice.reponse ? '#dcfce7' : reponseComptage === i ? '#fee2e2' : '#fff',
+                    borderColor: reponseComptage === null ? '#fde047' : i === exercice.reponse ? '#86efac' : reponseComptage === i ? '#fca5a5' : '#e5e7eb',
+                    color: reponseComptage === null ? '#374151' : i === exercice.reponse ? '#14532d' : reponseComptage === i ? '#991b1b' : '#374151',
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            {reponseComptage !== null && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 18, color: reponseComptage === exercice.reponse ? '#16a34a' : '#dc2626', margin: 0 }}>
+                  {reponseComptage === exercice.reponse ? 'Bravo ! Bonne réponse !' : `La bonne réponse était : ${exercice.choix[exercice.reponse]}`}
+                </p>
+                <button onClick={exerciceSuivant}
+                  style={{ backgroundColor: '#facc15', border: 'none', borderRadius: 12, padding: '14px 0', fontWeight: 700, color: '#713f12', cursor: 'pointer', fontSize: 15 }}
+                >
+                  {exerciceIndex === EXERCICES_COMPTAGE.length - 1 ? 'Recommencer' : 'Exercice suivant'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* SYLLABES */}
         {onglet === 'syllabes' && (
           <div>
             <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 16 }}>Appuie pour écouter chaque syllabe</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {SYLLABES.map((syl) => (
-                <button
-                  key={syl}
-                  onClick={() => lire(syl)}
+                <button key={syl} onClick={() => lire(syl)}
                   style={{ backgroundColor: '#fef9c3', border: '1px solid #fde047', color: '#713f12', borderRadius: 12, padding: '12px 0', fontSize: 16, fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   {syl}
@@ -133,9 +226,7 @@ export default function Alphabetisation() {
             <p style={{ textAlign: 'center', color: '#6b7280', marginBottom: 16 }}>Lis et écoute chaque mot</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {MOTS.map((mot) => (
-                <button
-                  key={mot}
-                  onClick={() => lire(mot)}
+                <button key={mot} onClick={() => lire(mot)}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', border: '2px solid #fde047', borderRadius: 16, padding: '12px 16px', cursor: 'pointer' }}
                 >
                   <span style={{ fontWeight: 'bold', fontSize: 18, color: '#713f12' }}>{mot}</span>
@@ -150,22 +241,18 @@ export default function Alphabetisation() {
         {onglet === 'histoires' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #fde047' }}>
-              <p style={{ color: '#374151', lineHeight: 1.6, fontSize: 17 }}>{histoire.texte}</p>
-              <button
-                onClick={() => lire(histoire.texte)}
-                style={{ marginTop: 12, backgroundColor: '#fef08a', border: 'none', borderRadius: 8, padding: '6px 14px', color: '#713f12', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
+              <p style={{ color: '#374151', lineHeight: 1.6, fontSize: 17, margin: 0 }}>{histoire.texte}</p>
+              <button onClick={() => lire(histoire.texte)}
+                style={{ marginTop: 12, backgroundColor: '#fef08a', border: 'none', borderRadius: 8, padding: '6px 14px', color: '#713f12', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
               >
                 <Volume2 size={16} /> Écouter
               </button>
             </div>
-
             <div style={{ backgroundColor: '#fefce8', borderRadius: 16, padding: 16, border: '1px solid #fde047' }}>
               <p style={{ fontWeight: 600, color: '#713f12', marginBottom: 12 }}>{histoire.question}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {histoire.choix.map((c, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setReponseChoisie(i)}
+                  <button key={i} onClick={() => setReponseChoisie(i)}
                     style={{
                       textAlign: 'left', padding: '12px 16px', borderRadius: 12, cursor: 'pointer', border: '2px solid',
                       backgroundColor: reponseChoisie === null ? '#fff' : i === histoire.reponse ? '#dcfce7' : reponseChoisie === i ? '#fee2e2' : '#fff',
@@ -183,10 +270,13 @@ export default function Alphabetisation() {
                 </p>
               )}
             </div>
-
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <button onClick={() => { setHistoireIndex(0); setReponseChoisie(null) }} disabled={histoireIndex === 0} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #e5e7eb', backgroundColor: '#fff', cursor: 'pointer', color: '#374151' }}>Précédente</button>
-              <button onClick={() => { setHistoireIndex(1); setReponseChoisie(null) }} disabled={histoireIndex === 1} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #e5e7eb', backgroundColor: '#fff', cursor: 'pointer', color: '#374151' }}>Suivante</button>
+              <button onClick={() => { setHistoireIndex(0); setReponseChoisie(null) }} disabled={histoireIndex === 0}
+                style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #e5e7eb', backgroundColor: '#fff', cursor: 'pointer', color: '#374151' }}
+              >Précédente</button>
+              <button onClick={() => { setHistoireIndex(1); setReponseChoisie(null) }} disabled={histoireIndex === 1}
+                style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #e5e7eb', backgroundColor: '#fff', cursor: 'pointer', color: '#374151' }}
+              >Suivante</button>
             </div>
           </div>
         )}
@@ -194,24 +284,17 @@ export default function Alphabetisation() {
         {/* ECRITURE */}
         {onglet === 'ecriture' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <p style={{ textAlign: 'center', color: '#6b7280' }}>Écris un mot ou une phrase</p>
-            <textarea
-              rows={5}
-              placeholder="Écris ici..."
-              value={texteEcrit}
-              onChange={(e) => setTexteEcrit(e.target.value)}
+            <p style={{ textAlign: 'center', color: '#6b7280', margin: 0 }}>Écris un mot ou une phrase</p>
+            <textarea rows={5} placeholder="Écris ici..." value={texteEcrit} onChange={(e) => setTexteEcrit(e.target.value)}
               style={{ width: '100%', borderRadius: 16, border: '2px solid #fde047', padding: 16, fontSize: 18, color: '#374151', backgroundColor: '#fff', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
             />
             <div style={{ display: 'flex', gap: 12 }}>
-              <button
-                onClick={() => lire(texteEcrit)}
-                disabled={!texteEcrit}
+              <button onClick={() => lire(texteEcrit)} disabled={!texteEcrit}
                 style={{ flex: 1, backgroundColor: '#facc15', border: 'none', borderRadius: 12, padding: '12px 0', color: '#713f12', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
                 <Volume2 size={18} /> Écouter
               </button>
-              <button
-                onClick={() => setTexteEcrit('')}
+              <button onClick={() => setTexteEcrit('')}
                 style={{ padding: '12px 20px', border: '1px solid #fde047', borderRadius: 12, backgroundColor: '#fff', color: '#713f12', cursor: 'pointer', fontWeight: 600 }}
               >
                 Effacer
@@ -220,7 +303,7 @@ export default function Alphabetisation() {
             <div style={{ backgroundColor: '#fef9c3', borderRadius: 16, padding: 16 }}>
               <p style={{ fontWeight: 600, color: '#713f12', marginBottom: 8 }}>Essaie d'écrire :</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {['MAMA','EAU','BEBE','PAIN'].map((mot) => (
+                {['MAMA','EAU','BEBE','PAIN','1','2','3'].map((mot) => (
                   <span key={mot} style={{ backgroundColor: '#fde047', color: '#713f12', borderRadius: 999, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>{mot}</span>
                 ))}
               </div>
@@ -241,8 +324,7 @@ export default function Alphabetisation() {
                     <p style={{ fontWeight: 'bold', fontSize: 18, color: '#713f12', margin: 0 }}>{item.mot}</p>
                     <p style={{ color: '#6b7280', fontSize: 13, margin: 0 }}>{item.traduction}</p>
                   </div>
-                  <button
-                    onClick={() => lire(item.mot, 'en-US')}
+                  <button onClick={() => lire(item.mot, 'en-US')}
                     style={{ backgroundColor: '#fef9c3', border: 'none', borderRadius: 999, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#713f12' }}
                   >
                     <Volume2 size={16} />
